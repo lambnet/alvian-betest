@@ -11,6 +11,9 @@ export const login = async (req, res) => {
     }
     if(comparePassword(password, account.password)){
         const token = generateToken(account);
+        // update last login timestamp
+        account.lastLoginDateTime = Date.now();
+        account.save();
         res.json({account, token});
     }else{
         res.status(401).send({msg: 'wrong userName or password'});

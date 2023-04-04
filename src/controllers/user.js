@@ -21,9 +21,37 @@ export const getAllUser = async (req, res) => {
 
 export const getUserByAccNumber = async(req, res) => {
     const {accNumber} = req.params;
-    const user = await User.findOne({accountNumber: accNumber});
+    const user = await User.findOne({accNumber});
     if(!user){
         res.status(404).send({msg: `User with accountNumber: ${accNumber} not found`});
     }
     res.json({user});
 }
+
+export const deleteUserByUserId = async (req, res) => {
+    const {userId} = req.params;
+    const user = await User.deleteOne({userId});
+    if(!user){
+        res.status(404).send({msg: `User with userId: ${userId} not found`});
+    }
+    res.json({user})
+}
+
+export const updateUserByUserId = async (req, res) => {
+    const userId = req.params.userId;
+    try{
+        const updatedUser = await User.updateOne({userId}, req.body, {new: true});
+        res.send({updatedUser});
+    }catch(err){
+        res.send(400).send({msg: `User with userId: ${userId} not found`});
+    }
+ }
+
+ export const deleteAllUser = async (req, res) => {
+    try{
+        const result = await User.deleteMany({});
+        res.status(200).send({msg: 'Users deleted'});
+    }catch(err){
+        res.status(500);
+    }
+ }
