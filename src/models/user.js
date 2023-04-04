@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema({
     userId: {
         type: String,
         required: true,
-        unique: true,
         default: uuid(),
     },
     fullName: {
@@ -17,9 +16,9 @@ const userSchema = new mongoose.Schema({
         required: true,
     },
     emailAddress: {
-        type: Date,
+        type: String,
         required: true,
-        default: Date.now()
+        unique: true,
     }, 
     registrationNumber: {
         type: String, 
@@ -27,6 +26,6 @@ const userSchema = new mongoose.Schema({
     }
 })
 
-userSchema.index({userId: 1});
+userSchema.set('autoIndex', true);
 const model = mongoose.model('User', userSchema);
 export default model;

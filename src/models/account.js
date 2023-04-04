@@ -1,12 +1,11 @@
 import mongoose, { Schema } from 'mongoose';
-import { hashPassword } from '../utils/helper';
+import { hashPassword } from '../utils/helper.js';
 import {v4 as uuid} from 'uuid';
 
 const accountSchema = new mongoose.Schema({
     accountId: {
         type: String,
         required: true,
-        unique: true,
         default: uuid(),
     },
     userName: {
@@ -26,10 +25,9 @@ const accountSchema = new mongoose.Schema({
     userId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
     }
 })
 
-accountSchema.index({accountId: 1});
+accountSchema.set('autoIndex', true);
 const model = mongoose.model('Account', accountSchema);
 export default model;
