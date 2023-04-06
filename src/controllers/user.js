@@ -1,4 +1,13 @@
 import User from '../models/user.js';
+import redis from 'redis';
+//https://www.digitalocean.com/community/tutorials/how-to-implement-caching-in-node-js-using-redis
+let redisClient;
+
+(async () => {
+    redisClient = redis.createClient();
+    redisClient.on('error', (error) => console.log(`Error: ${error}`));
+    await redisClient.connect();
+})();
 
 export const createUser = async (req, res) => {
     const { emailAddress } = req.body;
@@ -15,8 +24,28 @@ export const createUser = async (req, res) => {
 }
 
 export const getAllUser = async (req, res) => {
-    const users = await User.find();
-    res.json(users);
+    let results;
+    let isCached = false;
+    try{
+        const cacheResults = await redisClient.get('AllUsers');
+        if(cacheResults){
+            isCached=true;
+            results = JSON.parse(cacheResults);
+        }else{
+            results = await User.find();
+            if(results.length === 0){
+                throw 'API return empty'
+            }
+            await redisClient.set('AllUsers', JSON.stringify(results));
+        }
+        res.send({
+            fromCache: isCached,
+            data: results
+        });
+    }catch(err){
+        console.log(err)
+        res.status(404).send({msg: 'Data unavailable'});
+    }
 }
 
 export const getUserByAccNumber = async(req, res) => {
