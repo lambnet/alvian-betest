@@ -3,7 +3,7 @@ import Account from '../models/account.js';
 export const createAccount = async (req, res) => {
     const {userName} = req.body;
 
-    const account = await Account.findOne({userName});
+    const account = await Account.findOne({userName: userName});
     if(account){
         res.status(400).send({msg: 'userName already registered!'});
     }else{
@@ -19,14 +19,15 @@ export const getAllAccount = async (req, res) => {
 
 export const getAllAccByLastLogin = async (req, res) => {
     const days = parseInt(req.params.days);
+    // get today's date and substract with days
     const rules = new Date(new Date().setDate(new Date().getDate() - days));
-    const accounts = await Account.find({lastLoginDateTime: {$gt: rules}})
+    const accounts = await Account.find({lastLoginDateTime: {$lt: rules}})
     res.json(accounts);
 }
 
 export const deleteAccByAccId = async (req, res) => {
     const {accountId} = req.params;
-    const account = await Account.deleteOne({accountId});
+    const account = await Account.deleteOne({accountId: accountId});
     if(!account){
         res.status(404).send({msg: `Account with accountId: ${accountId} not found`});
     }
@@ -36,8 +37,8 @@ export const deleteAccByAccId = async (req, res) => {
 export const updateAccPasswordByAccId = async (req, res) => {
     const {accountId} = req.params;
     try{
-        const updatedAcc = await Account.updateOne({accountId}, req.body, {new: true});
-        res.send({updatedAcc});
+        const updatedAcc = await Account.updateOne({accountId: accountId}, req.body, {new: true});
+        res.json({updatedAcc});
     }catch(err){
         res.send(400);
     }

@@ -9,10 +9,30 @@ let redisClient;
     await redisClient.connect();
 })();
 
+// middleware for caching user info
+export const cacheData = async (req, res, next) => {
+    let results;
+    try{
+        const cacheResults = await redisClient.get('AllUsers');
+        if(cacheResults){
+            results = JSON.parse(cacheResults);
+            res.send({
+                fromCache: true,
+                data: results
+            });
+        }else{
+            next();
+        }
+    }catch(err){
+        res.status(404);
+    }
+}
+
+
 export const createUser = async (req, res) => {
     const { emailAddress } = req.body;
     
-    const user = await User.findOne({emailAddress});
+    const user = await User.findOne({emailAddress: emailAddress});
     if(user){
         console.log(user)
         res.status(400).send({msg: 'This email already registered!'});
@@ -25,21 +45,18 @@ export const createUser = async (req, res) => {
 
 export const getAllUser = async (req, res) => {
     let results;
-    let isCached = false;
     try{
-        const cacheResults = await redisClient.get('AllUsers');
-        if(cacheResults){
-            isCached=true;
-            results = JSON.parse(cacheResults);
-        }else{
-            results = await User.find();
-            if(results.length === 0){
-                throw 'API return empty'
-            }
-            await redisClient.set('AllUsers', JSON.stringify(results));
+        results = await User.find();
+        if(results.length === 0){
+            throw 'API return empty'
         }
+        await redisClient.set('AllUsers', JSON.stringify(results), {
+            EX: 180,
+            NX: true
+        });
+
         res.send({
-            fromCache: isCached,
+            fromCache: false,
             data: results
         });
     }catch(err){
@@ -50,16 +67,25 @@ export const getAllUser = async (req, res) => {
 
 export const getUserByAccNumber = async(req, res) => {
     const {accNumber} = req.params;
-    const user = await User.findOne({accNumber});
+    const user = await User.findOne({accountNumber: accNumber});
     if(!user){
         res.status(404).send({msg: `User with accountNumber: ${accNumber} not found`});
     }
     res.json({user});
 }
 
+export const getUserByRegNumber = async (req, res) => {
+    const {regNumber} = req.params;
+    const user = await User.findOne({registrationNumber: regNumber});
+    if(!user){
+        res.status(404).send({msg: `User with registrationNumber: ${regNumber} not found`});
+    }
+    res.json({user});
+}
+
 export const deleteUserByUserId = async (req, res) => {
     const {userId} = req.params;
-    const user = await User.deleteOne({userId});
+    const user = await User.deleteOne({userId: userId});
     if(!user){
         res.status(404).send({msg: `User with userId: ${userId} not found`});
     }
@@ -69,8 +95,8 @@ export const deleteUserByUserId = async (req, res) => {
 export const updateUserByUserId = async (req, res) => {
     const userId = req.params.userId;
     try{
-        const updatedUser = await User.updateOne({userId}, req.body, {new: true});
-        res.send({updatedUser});
+        const updatedUser = await User.updateOne({userId: userId}, req.body, {new: true});
+        res.json({updatedUser});
     }catch(err){
         res.send(400).send({msg: `User with userId: ${userId} not found`});
     }
