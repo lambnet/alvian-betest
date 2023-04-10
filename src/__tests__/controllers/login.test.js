@@ -14,7 +14,6 @@ const mockResponse = () => {
 
 jest.mock('../../models/account.js');
 
-let comparePassword = jest.fn((x) => x); 
 
 describe('login', () => {
     it('Should return 400 when required fields empty', async () => {
@@ -44,7 +43,7 @@ describe('login', () => {
         const mockAcc = {password: 'hashed_password'};
         Account.findOne.mockReturnValueOnce(mockAcc);
         
-        comparePassword(false);
+        comparePassword = jest.fn().mockReturnValue(false);
 
         await login(req, res);
 
@@ -58,8 +57,9 @@ describe('login', () => {
         const mockAcc = {_id: '123' ,userName: 'usertest', password: 'password', lastLoginDateTime: Date.now()};
         Account.findOne.mockResolvedValueOnce(mockAcc);
 
-        comparePassword(true)
-        generateToken = jest.fn().mockReturnValueOnce('generated_token');
+        // does not work here
+        comparePassword = jest.fn().mockReturnValue(true);
+        generateToken = jest.fn().mockReturnValue('generated_token');
 
         await login(req, res);
 

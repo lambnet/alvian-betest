@@ -11,5 +11,5 @@ export function comparePassword(raw, hashed){
 }
 
 export function generateToken(account){
-    return jwt.sign({account}, process.env.TOKEN_SECRET, {expiresIn:'15m'});
+    return jwt.sign({account}, process.env.TOKEN_SECRET, {expiresIn:'30m'});
 }
