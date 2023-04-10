@@ -3,7 +3,7 @@ import { comparePassword, generateToken } from '../utils/helper.js';
 
 export const login = async (req, res) => {
     const {userName, password} = req.body;
-
+ 
     if(!userName || !password) 
         res.status(400).json({msg: 'userName and password required'});
     

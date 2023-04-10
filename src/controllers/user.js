@@ -30,7 +30,7 @@ export const getAllUser = async (req, res) => {
             throw 'API return empty'
         }
         await redisClient.set('AllUsers', JSON.stringify(results), {
-            EX: 180,
+            EX: 60,
             NX: true
         });
 

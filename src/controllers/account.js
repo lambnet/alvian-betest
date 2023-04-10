@@ -21,8 +21,13 @@ export const createAccount = async (req, res) => {
 }
 
 export const getAllAccount = async (req, res) => {
-    const accounts = await Account.find({}, excludedFields);
-    res.json({accounts});
+    try{
+        const accounts = await Account.find({}, excludedFields);
+        res.status(200).json({accounts});
+    }catch(err){
+        res.status(500).json({msg: 'Something went wrong'});
+    }
+  
 }
 
 export const getAllAccByLastLogin = async (req, res) => {
@@ -30,28 +35,34 @@ export const getAllAccByLastLogin = async (req, res) => {
     // get today's date and substract with days
     const rules = new Date(new Date().setDate(new Date().getDate() - days));
     const accounts = await Account.find({lastLoginDateTime: {$lt: rules}}, excludedFields)
-    res.json({accounts});
+    res.status(200).json({accounts});
 }
 
 export const deleteAccByAccId = async (req, res) => {
     const {accountId} = req.params;
+    if(!accountId) res.status(400).json({msg: 'accountId is required'});
+
     const account = await Account.deleteOne({accountId: accountId});
     if(!account){
-        res.status(404).send({msg: `Account with accountId: ${accountId} not found`});
+        res.status(404).json({msg: `Account with accountId: ${accountId} not found`});
     }
-    res.json({account})
+    res.status(200).json({account})
 }
 
 export const updateAccPasswordByAccId = async (req, res) => {
     const {accountId} = req.params;
-    try{
-        const updatedAcc = await Account.updateOne({accountId: accountId}, req.body, {new: true}, excludedFields);
-        res.json({updatedAcc});
-    }catch(err){
-        res.send(400);
+    const {password} = req.body.password;
+
+    if(!accountId || password) res.status(400).json({msg: 'make sure to provide accountId or password'})
+    
+    const updatedAcc = await Account.updateOne({accountId: accountId}, password, {new: true}, excludedFields);
+    if(!updatedAcc){
+        res.status(404).json({msg: `Account with accountId: ${accountId} not found`});
     }
+   res.status(200).json({updatedAcc});
 }
 
+// will be deleted after dev
 export const deleteAllAcc = async (req, res) => {
     try{
         const result = await Account.deleteMany({});
