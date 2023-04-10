@@ -1,45 +1,24 @@
 import User from '../models/user.js';
-import redis from 'redis';
-//https://www.digitalocean.com/community/tutorials/how-to-implement-caching-in-node-js-using-redis
-let redisClient;
-
-(async () => {
-    redisClient = redis.createClient();
-    redisClient.on('error', (error) => console.log(`Error: ${error}`));
-    await redisClient.connect();
-})();
-
-// middleware for caching user info
-export const cacheData = async (req, res, next) => {
-    let results;
-    try{
-        const cacheResults = await redisClient.get('AllUsers');
-        if(cacheResults){
-            results = JSON.parse(cacheResults);
-            res.send({
-                fromCache: true,
-                data: results
-            });
-        }else{
-            next();
-        }
-    }catch(err){
-        res.status(404);
-    }
-}
-
+import redisClient from '../middlewares/cache.js';
 
 export const createUser = async (req, res) => {
-    const { emailAddress } = req.body;
+    const { fullName, accountNumber, emailAddress, registrationNumber } = req.body;
     
-    const user = await User.findOne({emailAddress: emailAddress});
-    if(user){
-        console.log(user)
-        res.status(400).send({msg: 'This email already registered!'});
-    }else{
-        const user = await User.create(req.body);
-        res.status(201).send(user);
+    if(!fullName || !accountNumber || !emailAddress || !registrationNumber) 
+        res.status(400).json({msg: 'Fields are required'});
+    
+    try{
+        const user = await User.findOne({emailAddress: emailAddress});
+        if(user){
+            res.status(400).send({msg: 'This email already registered!'});
+        }else{
+            const user = await User.create(req.body);
+            res.status(201).send(user);
+        }
+    }catch(err){
+        res.status(500).json({msg: 'Something went wrong'});
     }
+    
     
 }
 

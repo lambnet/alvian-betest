@@ -25,7 +25,8 @@ const accountSchema = new mongoose.Schema({
     userId: {
         type: String,
         ref: 'User',
-        required: true
+        required: true,
+        unique: true
     }
 })
 

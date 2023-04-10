@@ -1,28 +1,36 @@
 import Account from '../models/account.js';
 
-export const createAccount = async (req, res) => {
-    const {userName} = req.body;
+const excludedFields = {_id:0, __v:0, password:0};
 
-    const account = await Account.findOne({userName: userName});
-    if(account){
-        res.status(400).send({msg: 'userName already registered!'});
-    }else{
-        const newAcc = await Account.create(req.body);
-        res.status(201).send({newAcc})
+export const createAccount = async (req, res) => {
+    const {userName, password, userId} = req.body;
+
+    if(!userName || !password || !userId) res.status(400).json({msg: 'Fields are required'});
+
+    try{
+        const account = await Account.findOne({$or:[{userName: userName}, {userId: userId}]});
+        if(account){
+            res.status(401).json({msg: 'Account already exists'});
+        }else{
+            const newAcc = await Account.create(req.body);
+            res.status(201).json({Account: newAcc})
+        }
+    }catch(err){
+        res.status(500).json({msg: 'Something went wrong'})
     }
 }
 
 export const getAllAccount = async (req, res) => {
-    const accounts = await Account.find();
-    res.json(accounts);
+    const accounts = await Account.find({}, excludedFields);
+    res.json({accounts});
 }
 
 export const getAllAccByLastLogin = async (req, res) => {
     const days = parseInt(req.params.days);
     // get today's date and substract with days
     const rules = new Date(new Date().setDate(new Date().getDate() - days));
-    const accounts = await Account.find({lastLoginDateTime: {$lt: rules}})
-    res.json(accounts);
+    const accounts = await Account.find({lastLoginDateTime: {$lt: rules}}, excludedFields)
+    res.json({accounts});
 }
 
 export const deleteAccByAccId = async (req, res) => {
@@ -37,7 +45,7 @@ export const deleteAccByAccId = async (req, res) => {
 export const updateAccPasswordByAccId = async (req, res) => {
     const {accountId} = req.params;
     try{
-        const updatedAcc = await Account.updateOne({accountId: accountId}, req.body, {new: true});
+        const updatedAcc = await Account.updateOne({accountId: accountId}, req.body, {new: true}, excludedFields);
         res.json({updatedAcc});
     }catch(err){
         res.send(400);
