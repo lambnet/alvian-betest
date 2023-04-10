@@ -10,20 +10,22 @@ import {v4 as uuid} from 'uuid';
 const router = Router();
 // seeding db
 router.get('/seed', async (req, res) => {
-    const userId = uuid();
-    const users = [
-        {userId: userId,fullName: 'Admin Test', accountNumber: '13', emailAddress: 'admin@mail.com', 
-        registrationNumber: '234d'}
-    ]
-    
-    const newUsers = await User.create(users);
-    const accounts = [
-        {userName: 'admin', password: 'admin', userId: userId},
-    ]
-
-    const newAccounts = await Account.create(accounts);
-
-    res.json({newUsers, newAccounts});
+    try{
+        const userId = uuid();
+        const users = [
+            {userId: userId,fullName: 'Admin Test', accountNumber: '13', emailAddress: 'admin@mail.com', 
+            registrationNumber: '234d'}
+        ]
+            
+        const newUsers = await User.create(users);
+        const accounts = [
+            {userName: 'admin', password: 'admin', userId: userId},
+        ]
+        const newAccounts = await Account.create(accounts);
+        res.json({newUsers, newAccounts});
+    }catch(err){
+        res.status(500).json({msg: 'Something went wrong'});
+    }
 })
 
 

@@ -80,14 +80,3 @@ export const updateUserByUserId = async (req, res) => {
         res.send(400).json({msg: `User with userId: ${userId} not found`});
     }
  }
-
-
-// deleted later after dev 
- export const deleteAllUser = async (req, res) => {
-    try{
-        const result = await User.deleteMany({});
-        res.status(200).json({msg: 'Users deleted'});
-    }catch(err){
-        res.status(500);
-    }
- }

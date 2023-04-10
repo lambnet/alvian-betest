@@ -61,13 +61,3 @@ export const updateAccPasswordByAccId = async (req, res) => {
     }
    res.status(200).json({updatedAcc});
 }
-
-// will be deleted after dev
-export const deleteAllAcc = async (req, res) => {
-    try{
-        const result = await Account.deleteMany({});
-        res.status(200).send({msg: 'Accounts deleted'});
-    }catch(err){
-        res.send(500);
-    }
-}
