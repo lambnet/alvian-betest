@@ -196,6 +196,7 @@ describe('updateAccPasswordByAccId', () => {
         await accountController.updateAccPasswordByAccId(req, res);
 
         expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({msg: 'make sure to provide accountId or password'})
     })
 
     it('should return 200 when successfully updated', async () => {
@@ -208,5 +209,6 @@ describe('updateAccPasswordByAccId', () => {
         await accountController.updateAccPasswordByAccId(req, res);
 
         expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({updatedAcc: mockUpdated})
     })
 })

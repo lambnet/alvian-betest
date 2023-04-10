@@ -1,4 +1,4 @@
-import { login } from '../../controllers/login';
+import { login } from '../../controllers/login.js';
 import Account from '../../models/account.js';
 
 const mockRequest = (body) =>  ({
@@ -14,6 +14,7 @@ const mockResponse = () => {
 
 jest.mock('../../models/account.js');
 
+let comparePassword = jest.fn((x) => x); 
 
 describe('login', () => {
     it('Should return 400 when required fields empty', async () => {
@@ -21,6 +22,7 @@ describe('login', () => {
         const res = mockResponse();
 
         await login(req, res);
+
         expect(res.status).toHaveBeenCalledWith(400);
     })
 
@@ -31,6 +33,7 @@ describe('login', () => {
         Account.findOne.mockResolvedValueOnce(null);
 
         await login(req, res);
+
         expect(res.status).toHaveBeenCalledWith(404);
     })
 
@@ -40,23 +43,27 @@ describe('login', () => {
 
         const mockAcc = {password: 'hashed_password'};
         Account.findOne.mockReturnValueOnce(mockAcc);
-        comparePassword = jest.fn().mockReturnValueOnce(false);
+        
+        comparePassword(false);
 
         await login(req, res);
+
         expect(res.status).toHaveBeenCalledWith(401);
     })
 
     it('Should return 200 when login with correct credential', async () => {
-        const req = mockRequest({userName: 'correct', password: 'correct'});
+        const req = mockRequest({userName: 'usertest', password: 'password'});
         const res = mockResponse();
 
-        const mockAcc = {userName: 'correct', password: 'correct', lastLoginDateTime: Date.now()};
-        Account.findOne.mockReturnValueOnce(mockAcc);
+        const mockAcc = {_id: '123' ,userName: 'usertest', password: 'password', lastLoginDateTime: Date.now()};
+        Account.findOne.mockResolvedValueOnce(mockAcc);
 
-        comparePassword = jest.fn().mockResolvedValueOnce(true);
+        comparePassword(true)
         generateToken = jest.fn().mockReturnValueOnce('generated_token');
 
         await login(req, res);
+
+        expect(Account.findOne).toHaveBeenCalledWith({userName: req.body.userName});
         expect(res.status).toHaveBeenCalledWith(200);
 
     })
@@ -69,6 +76,7 @@ describe('login', () => {
         Account.findOne.mockRejectedValue(mockErr);
         
         await login(req, res);
+
         expect(res.status).toHaveBeenCalledWith(500);
     })
 })

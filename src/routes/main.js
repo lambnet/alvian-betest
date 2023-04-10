@@ -12,7 +12,9 @@ const router = Router();
 router.get('/seed', async (req, res) => {
     const userId = uuid();
     const users = [
-        {userId: userId,fullName: 'Admin Test', accountNumber: '13', emailAddress: 'admin@mail.com', registrationNumber: '234d'}]
+        {userId: userId,fullName: 'Admin Test', accountNumber: '13', emailAddress: 'admin@mail.com', 
+        registrationNumber: '234d'}
+    ]
     
     const newUsers = await User.create(users);
     const accounts = [

@@ -3,7 +3,9 @@ import * as redis from 'redis';
 let redisClient;
 
 export const connectToRedis = async () => {
-    redisClient = redis.createClient();
+    redisClient = redis.createClient({
+        url: 'redis://redis:6379'
+    });
     redisClient.on('error', (err) => console.log(`Error ${err}`));
     await redisClient.connect();
 }

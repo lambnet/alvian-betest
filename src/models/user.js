@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
     accountNumber: {
         type: String,
         required: true,
+        unique: true,
     },
     emailAddress: {
         type: String,
@@ -22,7 +23,8 @@ const userSchema = new mongoose.Schema({
     }, 
     registrationNumber: {
         type: String, 
-        required: true
+        required: true,
+        unique: true,
     }
 })
 
